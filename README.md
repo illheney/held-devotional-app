@@ -59,3 +59,13 @@ The app gives extra weight to:
 It avoids repeating the same theme too many days in a row and gradually unlocks deeper entries within themes.
 
 This is personalization, not diagnosis. It intentionally avoids medical or mental-health claims.
+
+## v1.1 polish
+
+- Proper iPhone Home Screen PNG icons
+- Dark mode
+- More reliable local date handling
+- Check-in notes now feed long-term devotional learning
+- "Somewhat" feedback contributes to learning
+- Empty learning state no longer pretends a pattern exists
+- Compatibility fallback for IDs in limited webviews
