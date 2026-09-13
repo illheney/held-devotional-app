@@ -1,4 +1,4 @@
-/* Held v1.3 content presentation helpers. */
+/* Held v1.4 content presentation helpers + feature loader. */
 (() => {
   const labelForLevel = level => ({1:"Foundation",2:"Growing",3:"Deeper",4:"Rooted"}[level] || "Deeper");
   const refreshContentDetails = () => {
@@ -9,8 +9,8 @@
     if (devotional && eyebrow) eyebrow.textContent = eyebrow.textContent.replace(/ · .*$/, ` · ${labelForLevel(devotional.level)}`);
 
     document.querySelectorAll("p,span,div").forEach(el => {
-      if (el.children.length === 0 && el.textContent?.includes("Held 1.2.0")) {
-        el.textContent = el.textContent.replace("Held 1.2.0", "Held 1.3.0");
+      if (el.children.length === 0 && /Held 1\.[23]\.0/.test(el.textContent || "")) {
+        el.textContent = el.textContent.replace(/Held 1\.[23]\.0/, "Held 1.4.0");
       }
     });
 
@@ -20,7 +20,28 @@
     }
   };
 
+  const loadStyle = href => {
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  };
+  const loadScript = src => new Promise((resolve,reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+
   const app = document.getElementById("app");
   if (app) new MutationObserver(refreshContentDetails).observe(app,{childList:true,subtree:true});
   refreshContentDetails();
+
+  loadStyle("journeys.css");
+  loadScript("scripture.js")
+    .then(() => loadScript("journeys.js"))
+    .catch(() => {});
 })();
