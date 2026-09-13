@@ -1,0 +1,13 @@
+/* Held v1.1 visual polish */
+body.dark{
+  --bg:#20251f;--card:#2b312a;--card2:#252b24;--ink:#f2eee5;--muted:#b8bdb4;
+  --sage:#90a18a;--sage-dark:#c1d0bb;--rose:#b78f89;--gold:#c8a56d;--line:#424a40;
+  --shadow:0 12px 35px rgba(0,0,0,.22);
+}
+body.dark .topbar{background:linear-gradient(to bottom,rgba(32,37,31,.98),rgba(32,37,31,.90),rgba(32,37,31,0))}
+body.dark .bottom-nav{background:rgba(43,49,42,.96)}
+body.dark input,body.dark textarea,body.dark select,body.dark .chip{background:#222721;color:var(--ink);border-color:var(--line)}
+body.dark .notice{background:#293028;border-color:#414b3f}
+body.dark .install-tip{background:#252b24}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.toggle{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
