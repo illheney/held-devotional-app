@@ -6,7 +6,7 @@ Held is a free, offline-first devotional web app designed to adapt over time wit
 
 - Daily adaptive devotional
 - Scripture displayed directly inside Held
-- Public-domain KJV passage caching for offline reading
+- Public-domain World English Bible passage caching for offline reading
 - Optional one-tap download of the current Scripture library
 - Mood + need check-ins
 - On-device theme scoring that adapts future devotionals
@@ -28,7 +28,7 @@ Held is a free, offline-first devotional web app designed to adapt over time wit
 
 Held stores personal devotional data in the browser's localStorage. Journal text is scanned only by simple on-device keyword rules to adjust theme weights. No journal, prayer, check-in, or adaptive-profile data is sent to a server or AI API by Held.
 
-When Scripture text is first requested, Held sends only the Bible reference (for example, `Philippians 4:6-7`) to Bible API and requests the public-domain King James Version. The returned passage is then cached on the device. The Settings screen also includes **Download all current passages** so the current devotional library can be prepared for offline use.
+When Scripture text is first requested, Held sends only the Bible reference (for example, `Philippians 4:6-7`) to Bible API and requests the public-domain World English Bible. The returned passage is then cached on the device. The Settings screen also includes **Download all current passages** so the current devotional library can be prepared for offline use. Bulk downloads are intentionally paced to respect the free Scripture service's request limits.
 
 Because personal data is local, clearing browser/site data or deleting the web app can remove it. Use the Export backup button periodically.
 
@@ -69,7 +69,7 @@ Each theme progresses from foundational material into growing, deeper, and roote
 
 ## Scripture
 
-Held displays Scripture inside the devotional experience using the **King James Version (KJV)**, a public-domain English Bible translation. Passage text is cached locally after it is loaded. The Settings screen can download every unique reference currently used in the Held devotional library for stronger offline support.
+Held displays Scripture inside the devotional experience using the **World English Bible (WEB)**, a modern-English public-domain translation. Passage text is cached locally after it is loaded. The Settings screen can download every unique reference currently used in the Held devotional library for stronger offline support.
 
 ## How the adaptive engine works
 
@@ -100,9 +100,9 @@ On iPhone, open the live Pages address in Safari → Share → Add to Home Scree
 - Added seven Guided Journeys
 - Added per-journey day progress and private notes
 - Added adaptive journey suggestions
-- Added in-app public-domain KJV Scripture
+- Added in-app public-domain World English Bible Scripture
 - Added local Scripture caching
-- Added one-tap offline Scripture download
+- Added paced one-tap offline Scripture download
 - Kept journals, prayers, favorites, history, and learning data compatible
 
 ## v1.3
