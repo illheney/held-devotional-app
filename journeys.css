@@ -1,0 +1,36 @@
+/* Held v1.4 Guided Journeys + Scripture presentation */
+.held-scripture-text{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.held-scripture-text p,.journey-scripture-body p{font-family:Georgia,"Times New Roman",serif;font-size:1.08rem;line-height:1.72;margin:.25rem 0;color:var(--ink)}
+.scripture-credit{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;color:var(--muted);font-size:.76rem;letter-spacing:.02em}
+.scripture-loading{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:.9rem;padding:8px 0}
+.scripture-pulse{width:9px;height:9px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 0 rgba(127,143,122,.35);animation:scripturePulse 1.4s infinite}
+@keyframes scripturePulse{70%{box-shadow:0 0 0 10px rgba(127,143,122,0)}100%{box-shadow:0 0 0 0 rgba(127,143,122,0)}}
+.scripture-offline{padding:14px;border-radius:15px;background:var(--card2);border:1px solid var(--line)}
+.scripture-offline p{font-family:inherit;font-size:.9rem;margin:.45rem 0 .8rem}
+.scripture-settings-card .scripture-download-status{display:flex;align-items:baseline;gap:8px;margin:16px 0}
+.scripture-download-status strong{font-family:Georgia,serif;font-size:2rem}.scripture-download-status span{color:var(--muted);font-size:.88rem}
+.danger-text{color:#9b5b58;margin-top:12px}
+
+.journeys-shelf{max-width:760px;margin:0 auto 28px}.journey-heading{align-items:flex-start}.journey-heading h2{margin-top:.2rem}.journey-heading p{margin:.3rem 0 0}
+.journey-suggestion-label{display:flex;align-items:center;gap:7px;font-size:.78rem;text-transform:uppercase;letter-spacing:.11em;color:var(--sage-dark);font-weight:800;margin:15px 2px 8px}
+.journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.journey-card{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:19px;box-shadow:0 10px 28px rgba(52,47,41,.06)}
+.journey-card:before{content:"";position:absolute;inset:auto -50px -70px auto;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb,var(--sage) 9%,transparent);pointer-events:none}
+.journey-card.featured{padding:23px;background:linear-gradient(145deg,color-mix(in srgb,var(--sage) 10%,var(--card)),var(--card) 65%)}
+.journey-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.journey-glyph{display:grid;place-items:center;width:38px;height:38px;border-radius:14px;background:var(--card2);border:1px solid var(--line);font-family:Georgia,serif;font-size:1.25rem}.journey-glyph.large{width:62px;height:62px;border-radius:20px;font-size:1.8rem;margin-bottom:18px}
+.journey-card h3{font-size:1.3rem;margin:.35rem 0}.journey-card p{color:var(--muted);font-size:.9rem;line-height:1.55;margin:.4rem 0 1rem}.journey-card .badge{background:var(--card2)}
+.journey-progress{height:6px;background:var(--card2);border-radius:999px;overflow:hidden;border:1px solid color-mix(in srgb,var(--line) 70%,transparent)}.journey-progress span{display:block;height:100%;border-radius:999px;background:var(--sage);transition:width .35s ease}
+.journey-card-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;font-size:.78rem;color:var(--muted)}.journey-card-foot .text-btn{font-size:.82rem;white-space:nowrap}
+
+.journey-detail,.journey-reading{max-width:720px;margin:0 auto;padding:8px 0 20px}.back-link{margin:0 0 16px;padding-left:0}.journey-detail-hero{padding:10px 0 16px}.journey-detail-hero h1,.journey-reading-head h1{font-size:2.2rem;letter-spacing:-.025em}.journey-detail-hero .lede{max-width:620px;color:var(--muted);font-size:1.02rem}
+.journey-overall{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 17px;margin:8px 0 16px}.journey-overall div:first-child{display:flex;flex-direction:column;min-width:120px}.journey-overall span{font-size:.78rem;color:var(--muted)}
+.journey-days{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+.journey-day-row{width:100%;display:grid;grid-template-columns:45px 1fr 24px;align-items:center;gap:10px;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:15px 17px;color:var(--ink)}.journey-day-row:last-child{border-bottom:0}.journey-day-row:not(.locked):hover{background:var(--card2)}.journey-day-row.locked{opacity:.46;cursor:not-allowed}.journey-day-row.done .day-number{background:var(--sage);color:white;border-color:var(--sage)}
+.day-number{width:34px;height:34px;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;font-size:.75rem;font-weight:800;color:var(--sage-dark);background:var(--card2)}.day-copy{display:flex;flex-direction:column;gap:2px}.day-copy small{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em}.day-copy strong{font-family:Georgia,serif;font-size:1rem}.day-copy span{color:var(--muted);font-size:.75rem}.day-arrow{color:var(--muted)}.journey-actions{margin:16px 0}
+
+.journey-reading-head{padding:8px 0 13px}.journey-reading-head p{margin:.3rem 0}.journey-scripture{box-shadow:none;background:linear-gradient(145deg,var(--card),var(--card2));margin:6px 0 14px}.journey-ref{font-family:Georgia,serif;font-size:1.15rem;display:block;margin:7px 0 4px}.journey-scripture-body{margin-top:13px;padding-top:13px;border-top:1px solid var(--line)}
+.journey-devotional{margin-top:14px}.journey-day-actions{margin:15px 0 24px}.journey-complete-note{display:flex;flex-direction:column;gap:2px;text-align:center;padding:14px;color:var(--sage-dark)}.journey-complete-note span{font-size:.82rem;color:var(--muted)}
+
+body.dark .journey-card.featured{background:linear-gradient(145deg,color-mix(in srgb,var(--sage) 13%,var(--card)),var(--card) 65%)}body.dark .journey-card:before{background:color-mix(in srgb,var(--sage) 10%,transparent)}
+@media(max-width:620px){.journey-grid{grid-template-columns:1fr}.journey-card.featured{padding:20px}.journey-card-foot{align-items:flex-end}.journey-overall{grid-template-columns:1fr;gap:8px}.journey-detail-hero h1,.journey-reading-head h1{font-size:1.85rem}.held-scripture-text p,.journey-scripture-body p{font-size:1.02rem}.scripture-credit{flex-direction:column;gap:3px}}
+@media(prefers-reduced-motion:reduce){.scripture-pulse{animation:none}.journey-progress span{transition:none}}
