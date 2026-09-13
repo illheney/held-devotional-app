@@ -1,5 +1,5 @@
-const CACHE="held-v1.3";
-const ASSETS=["./","./index.html","./styles.css","./polish.css","./app.js","./content.js","./polish.js","./content-polish.js","./manifest.webmanifest","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png"];
+const CACHE="held-v1.4";
+const ASSETS=["./","./index.html","./styles.css","./polish.css","./journeys.css","./app.js","./content.js","./polish.js","./content-polish.js","./scripture.js","./journeys.js","./manifest.webmanifest","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
