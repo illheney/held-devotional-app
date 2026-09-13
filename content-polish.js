@@ -43,5 +43,6 @@
   loadStyle("journeys.css");
   loadScript("scripture.js")
     .then(() => loadScript("journeys.js"))
+    .then(() => loadScript("journey-translation.js"))
     .catch(() => {});
 })();
