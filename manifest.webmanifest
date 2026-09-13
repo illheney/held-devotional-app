@@ -1,0 +1,18 @@
+{
+  "name": "Held — Adaptive Devotional",
+  "short_name": "Held",
+  "description": "Scripture that meets you where you are.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f2ea",
+  "theme_color": "#7f8f7a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
