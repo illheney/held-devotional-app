@@ -1,1 +1,0 @@
-PNG icon assets are committed as binary blobs for iPhone/PWA installation.
