@@ -12,8 +12,12 @@ Held is a free, offline-first devotional web app designed to adapt over time wit
 - On-device theme scoring that adapts future devotionals
 - Reflection journal
 - Prayer journal with answered-prayer tracking
+- Answered-prayer retrospectives
 - Favorites
 - Gentle progress and weekly reflection
+- Monthly reflections generated from the user's actual Held history
+- Meaningful growth markers without scorekeeping
+- Journey completion reflections
 - "What Held is learning" theme view
 - Library search and theme filters
 - Quiet reading mode
@@ -26,7 +30,7 @@ Held is a free, offline-first devotional web app designed to adapt over time wit
 
 ## Privacy model
 
-Held stores personal devotional data in the browser's localStorage. Journal text is scanned only by simple on-device keyword rules to adjust theme weights. No journal, prayer, check-in, or adaptive-profile data is sent to a server or AI API by Held.
+Held stores personal devotional data in the browser's localStorage. Journal text is scanned only by simple on-device keyword rules to adjust theme weights. No journal, prayer, check-in, reflection, milestone, or adaptive-profile data is sent to a server or AI API by Held.
 
 When Scripture text is first requested, Held sends only the Bible reference (for example, `Philippians 4:6-7`) to Bible API and requests the public-domain World English Bible. The returned passage is then cached on the device. The Settings screen also includes **Download all current passages** so the current devotional library can be prepared for offline use. Bulk downloads are intentionally paced to respect the free Scripture service's request limits.
 
@@ -34,7 +38,7 @@ Because personal data is local, clearing browser/site data or deleting the web a
 
 ## Guided Journeys
 
-Held v1.4 includes seven 7-day Guided Journeys:
+Held includes seven 7-day Guided Journeys:
 
 - Peace When Your Mind Won't Stop
 - Learning to Trust Again
@@ -45,6 +49,17 @@ Held v1.4 includes seven 7-day Guided Journeys:
 - Becoming a Mother
 
 Journeys live alongside the normal adaptive devotional rather than replacing it. Each journey remembers its own current day, completed days, and private notes. Held can suggest a journey from the same on-device theme signals used for the daily devotional.
+
+## Long-term growth
+
+Held v1.5 adds a long-term reflection layer designed to make months of use more meaningful without turning faith into a points system.
+
+- **Monthly reflection:** summarizes devotional days, recurring themes, journal activity, answered prayers, and completed Guided Journeys for the month, then asks four reflection questions.
+- **Growth markers:** quietly remembers meaningful moments such as the first completed devotional, seven and thirty days of returning, the first journal entry, answered prayers, and completed Guided Journeys.
+- **Answered-prayer retrospectives:** lets the user record how a prayer unfolded, what surprised them, and what they want to remember about God.
+- **Journey completion reflection:** after finishing a Guided Journey, Held creates a dedicated space to record what stayed with the user and what feels different.
+
+All of this remains local to the device and is included in the existing Held backup because it lives inside the same saved state.
 
 ## Content library
 
@@ -94,6 +109,15 @@ This is personalization, not diagnosis. Held intentionally avoids medical or men
 5. Select the `main` branch and `/ (root)`, then save.
 
 On iPhone, open the live Pages address in Safari → Share → Add to Home Screen → Open as Web App (if shown) → Add.
+
+## v1.5
+
+- Added monthly reflection summaries and prompts
+- Added non-competitive growth markers
+- Added answered-prayer retrospectives
+- Added Guided Journey completion reflections
+- Kept every long-term reflection local and backup-compatible
+- Added the v1.5 files to the offline app cache
 
 ## v1.4
 
