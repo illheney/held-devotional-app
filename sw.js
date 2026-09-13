@@ -1,9 +1,37 @@
-const CACHE="held-v1.1";
+const CACHE="held-v1.2";
 const ASSETS=["./","./index.html","./styles.css","./polish.css","./app.js","./polish.js","./manifest.webmanifest","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png"];
-self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
-self.addEventListener("fetch",e=>{
-  e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(resp=>{
-    const copy=resp.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return resp;
-  }).catch(()=>caches.match("./index.html"))));
+
+self.addEventListener("install",event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
+});
+
+self.addEventListener("activate",event=>{
+  event.waitUntil(
+    caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("held-")&&key!==CACHE).map(key=>caches.delete(key))))
+      .then(()=>self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch",event=>{
+  const request=event.request;
+  if(request.method!=="GET") return;
+
+  if(request.mode==="navigate"){
+    event.respondWith(
+      fetch(request).then(response=>{
+        const copy=response.clone(); caches.open(CACHE).then(cache=>cache.put("./index.html",copy)); return response;
+      }).catch(()=>caches.match("./index.html"))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then(cached=>{
+      const network=fetch(request).then(response=>{
+        if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));}
+        return response;
+      }).catch(()=>cached);
+      return cached||network;
+    })
+  );
 });
