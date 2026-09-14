@@ -1,0 +1,28 @@
+/* Held 1.7.2 mobile viewport hotfix — keep content clear of the fixed app navigation. */
+:root{--held-nav-clearance:108px}
+html{scroll-padding-bottom:calc(var(--held-nav-clearance) + 24px)}
+body{padding-bottom:calc(var(--held-nav-clearance) + 32px)}
+.app-shell{padding-bottom:24px}
+.card,.devotional-card,.checkin-card,button,input,textarea,select{scroll-margin-bottom:calc(var(--held-nav-clearance) + 24px)}
+
+/* In a normal iPhone browser the browser chrome already owns the lower safe area.
+   Avoid double-counting it, which made Held's floating nav unnecessarily tall. */
+@media (max-width:680px){
+  .bottom-nav{padding:0 10px 8px!important}
+  .bottom-inner{padding:6px!important;border-radius:21px!important}
+  .nav-btn{min-height:48px!important;padding:6px 3px!important}
+  .nav-btn span{font-size:.65rem!important}
+  body{padding-bottom:148px}
+  .app-shell{padding-bottom:32px}
+}
+
+/* Installed Home Screen mode still needs the physical iPhone home-indicator inset. */
+@media (display-mode:standalone){
+  .bottom-nav{padding:0 10px calc(10px + env(safe-area-inset-bottom))!important}
+  body{padding-bottom:calc(142px + env(safe-area-inset-bottom))}
+}
+
+@media (display-mode:fullscreen){
+  .bottom-nav{padding:0 10px calc(10px + env(safe-area-inset-bottom))!important}
+  body{padding-bottom:calc(142px + env(safe-area-inset-bottom))}
+}
