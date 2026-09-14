@@ -17,6 +17,8 @@ except Exception as e:
 index=(root/'index.html').read_text()
 script_refs=re.findall(r'<script[^>]+src="([^"]+)"',index)
 style_refs=re.findall(r'<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"',index)
+script_paths=[ref.split('?')[0].lstrip('./') for ref in script_refs]
+style_paths=[ref.split('?')[0].lstrip('./') for ref in style_refs]
 for ref in script_refs+style_refs:
     check((root/ref.split('?')[0]).exists(),f'missing index asset: {ref}')
 
@@ -47,16 +49,17 @@ required=[
     'stability.js','content-polish.js','checkin-fix.js','journey-fix.js'
 ]
 for ref in required:
-    check(ref in script_refs,f'required runtime module not loaded by index: {ref}')
+    check(ref in script_paths,f'required runtime module not loaded by index: {ref}')
 
-check(script_refs and script_refs[0]=='preflight.js','preflight must load before app.js')
-check(script_refs[-2:]==['checkin-fix.js','journey-fix.js'],'deterministic interaction fixes must load last')
+check(script_paths and script_paths[0]=='preflight.js','preflight must load before app.js')
+check(script_paths[-2:]==['checkin-fix.js','journey-fix.js'],'deterministic interaction fixes must load last')
 check('catch(()=>{})' not in (root/'content-polish.js').read_text(),'content-polish must not silently swallow module-load failures')
-check('held-v1.7.1' in sw,'service worker cache version must be v1.7.1')
+check('held-v1.7.2' in sw,'service worker cache version must be v1.7.2')
 check('caches.match(request)' not in sw,'service worker must not search stale previous caches for runtime assets')
 check('document.addEventListener("click"' in (root/'checkin-fix.js').read_text(),'check-in fix must use document-level capture delegation')
 check('complete-journey-day' in (root/'journey-fix.js').read_text(),'journey fix must own day completion')
 check('text!=="Scripture · WEB"' in (root/'journey-translation.js').read_text(),'journey translation sync must be idempotent')
+check((root/'recovery.html').exists(),'recovery page must exist')
 
 if errors:
     print('HELD STATIC AUDIT: FAIL')
