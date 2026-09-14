@@ -8,7 +8,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - name: Check out Held
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
 
       - name: Install browser audit dependency
         run: |
-          python3 -m pip install --disable-pip-version-check -q selenium
+          python3 -m pip install --disable-pip-version-check -q websocket-client
 
       - name: Browser interaction smoke test
         run: |
@@ -32,4 +32,4 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
-          python3 .github/tests/run_browser_audit.py
+          timeout 45s python3 .github/tests/run_browser_audit.py
