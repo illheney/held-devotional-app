@@ -7,7 +7,6 @@ errors=[]
 def check(ok,msg):
     if not ok: errors.append(msg)
 
-# Manifest parses.
 try:
     manifest=json.loads((root/'manifest.webmanifest').read_text())
     check(manifest.get('display')=='standalone','manifest display must be standalone')
@@ -42,7 +41,7 @@ for ref in script_refs+style_refs:
     check(normalized in sw_assets,f'index asset not cached for offline use: {ref}')
 
 required=[
-    'app.js','content.js','polish.js','onboarding-fix.js','scripture.js','journeys.js',
+    'preflight.js','app.js','content.js','polish.js','onboarding-fix.js','scripture.js','journeys.js',
     'journey-translation.js','growth.js','memory-sources.js','memories-core.js',
     'memory-today.js','memory-actions.js','memory-journey.js','memory-settings.js',
     'stability.js','content-polish.js'
@@ -50,8 +49,10 @@ required=[
 for ref in required:
     check(ref in script_refs,f'required runtime module not loaded by index: {ref}')
 
+check(script_refs and script_refs[0]=='preflight.js','preflight must load before app.js')
 check('catch(()=>{})' not in (root/'content-polish.js').read_text(),'content-polish must not silently swallow module-load failures')
 check('held-v1.7.0' in sw,'service worker cache version must be v1.7.0')
+check('caches.match(request)' not in sw,'service worker must not search stale previous caches for runtime assets')
 
 if errors:
     print('HELD STATIC AUDIT: FAIL')
