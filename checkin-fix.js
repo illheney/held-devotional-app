@@ -1,4 +1,4 @@
-/* Held v1.7 — deterministic daily check-in controls. */
+/* Held v1.7.1 — deterministic primary interaction controls. */
 (() => {
   if (window.__heldStableCheckinInstalled) return;
   window.__heldStableCheckinInstalled = true;
@@ -32,7 +32,28 @@
     if (typeof toast === "function") toast("Today's path adjusted");
   }
 
+  function toggleQuiet(button) {
+    const on = !document.body.classList.contains("quiet-mode");
+    document.body.classList.toggle("quiet-mode", on);
+    button.textContent = on ? "Exit quiet" : "Quiet";
+    button.setAttribute("aria-pressed", String(on));
+    if (on) button.setAttribute("aria-label", "Exit quiet reading mode");
+    else button.setAttribute("aria-label", "Enter quiet reading mode");
+    const devotional=document.querySelector(".devotional-card");
+    if (devotional && typeof window.scrollTo === "function") {
+      try { window.scrollTo({top:devotional.offsetTop||0,behavior:"smooth"}); } catch {}
+    }
+  }
+
   document.addEventListener("click", event => {
+    const quietButton = event.target.closest && event.target.closest("#quiet-mode");
+    if (quietButton) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      toggleQuiet(quietButton);
+      return;
+    }
+
     const moodButton = event.target.closest && event.target.closest("[data-mood]");
     if (moodButton) {
       event.preventDefault();
