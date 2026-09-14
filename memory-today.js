@@ -1,8 +1,8 @@
-/* Held v1.6 Remembered Grace: Today */
+/* Held v1.7 Remembered Grace: Today */
 (() => {
   const ago=d=>{const n=heldMemories.age(d);if(n<28)return `${n} ${n===1?"day":"days"} ago`;if(n<330){const m=Math.max(1,Math.round(n/30));return `${m} ${m===1?"month":"months"} ago`;}const y=Math.max(1,Math.round(n/365));return `${y} ${y===1?"year":"years"} ago`;};
   const add=()=>{
-    if(state.lastView!=="today"||document.querySelector("#remembered-grace-today")||!window.heldMemories)return;
+    if(state.lastView!=="today"||state.libraryReadingId||document.querySelector("#remembered-grace-today")||!window.heldMemories)return;
     if(state.checkin?.date!==todayKey()&&!state.history?.find(h=>h.date===todayKey()&&h.completed))return;
     const m=heldMemories.choose(),host=document.querySelector(".today-page"),before=host?.querySelector(".devotional-card");
     if(!m||!host||!before)return;
