@@ -1,4 +1,4 @@
-/* Held v1.6 content presentation helpers + feature loader. */
+/* Held v1.6.2 content presentation helpers + feature loader. */
 (() => {
   const labelForLevel = level => ({1:"Foundation",2:"Growing",3:"Deeper",4:"Rooted"}[level] || "Deeper");
   const refreshContentDetails = () => {
@@ -8,7 +8,7 @@
     const eyebrow = document.querySelector(".devotional-head .eyebrow");
     if (devotional && eyebrow) eyebrow.textContent = eyebrow.textContent.replace(/ · .*$/, ` · ${labelForLevel(devotional.level)}`);
     document.querySelectorAll("p,span,div").forEach(el => {
-      if (el.children.length === 0 && /Held 1\.[1-5]\.0/.test(el.textContent || "")) el.textContent = el.textContent.replace(/Held 1\.[1-5]\.0/, "Held 1.6.0");
+      if (el.children.length === 0 && /Held 1\.\d+\.\d+/.test(el.textContent || "")) el.textContent = el.textContent.replace(/Held 1\.\d+\.\d+/, "Held 1.6.2");
     });
     if (state?.lastView === "library") {
       const hero = document.querySelector(".library-page .hero p, .hero .muted");
