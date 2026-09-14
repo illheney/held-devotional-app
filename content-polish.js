@@ -1,4 +1,4 @@
-/* Held v1.6.2 content presentation helpers + feature loader. */
+/* Held v1.7 content presentation helpers. Startup order now lives in index.html. */
 (() => {
   const labelForLevel = level => ({1:"Foundation",2:"Growing",3:"Deeper",4:"Rooted"}[level] || "Deeper");
   const refreshContentDetails = () => {
@@ -7,27 +7,21 @@
     const devotional = entry ? DEVOTIONALS.find(item => item.id === entry.devotionalId) : null;
     const eyebrow = document.querySelector(".devotional-head .eyebrow");
     if (devotional && eyebrow) eyebrow.textContent = eyebrow.textContent.replace(/ · .*$/, ` · ${labelForLevel(devotional.level)}`);
+
     document.querySelectorAll("p,span,div").forEach(el => {
-      if (el.children.length === 0 && /Held 1\.\d+\.\d+/.test(el.textContent || "")) el.textContent = el.textContent.replace(/Held 1\.\d+\.\d+/, "Held 1.6.2");
+      if (el.children.length !== 0) return;
+      const text=el.textContent||"";
+      if (/Held 1\.\d+\.\d+/.test(text)) el.textContent=text.replace(/Held 1\.\d+\.\d+/,"Held 1.7.0");
+      else if (/Held v1\.\d+(?:\.\d+)?/.test(text)) el.textContent=text.replace(/Held v1\.\d+(?:\.\d+)?/,"Held v1.7");
     });
+
     if (state?.lastView === "library") {
       const hero = document.querySelector(".library-page .hero p, .hero .muted");
-      if (hero && !hero.textContent.includes("104")) hero.textContent = `${DEVOTIONALS.length} devotionals · search by theme, title, or Scripture.`;
+      if (hero && !hero.textContent.includes(String(DEVOTIONALS.length))) hero.textContent = `${DEVOTIONALS.length} devotionals · search by theme, title, or Scripture.`;
     }
   };
-  const loadStyle = href => { if (document.querySelector(`link[href="${href}"]`)) return; const link=document.createElement("link");link.rel="stylesheet";link.href=href;document.head.appendChild(link); };
-  const loadScript = src => new Promise((resolve,reject)=>{ if(document.querySelector(`script[src="${src}"]`)){resolve();return;} const script=document.createElement("script");script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script); });
-  const app=document.getElementById("app"); if(app)new MutationObserver(refreshContentDetails).observe(app,{childList:true,subtree:true}); refreshContentDetails();
-  loadStyle("journeys.css"); loadStyle("growth.css"); loadStyle("memories.css");
-  loadScript("scripture.js")
-    .then(()=>loadScript("journeys.js"))
-    .then(()=>loadScript("journey-translation.js"))
-    .then(()=>loadScript("growth.js"))
-    .then(()=>loadScript("memory-sources.js"))
-    .then(()=>loadScript("memories-core.js"))
-    .then(()=>loadScript("memory-today.js"))
-    .then(()=>loadScript("memory-actions.js"))
-    .then(()=>loadScript("memory-journey.js"))
-    .then(()=>loadScript("memory-settings.js"))
-    .catch(()=>{});
+
+  const app=document.getElementById("app");
+  if(app)new MutationObserver(refreshContentDetails).observe(app,{childList:true,subtree:true});
+  refreshContentDetails();
 })();
