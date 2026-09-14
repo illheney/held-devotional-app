@@ -122,7 +122,7 @@
       reset.addEventListener("click",e=>{
         e.preventDefault();e.stopImmediatePropagation();
         if(!confirm("Delete all Held data from this device? This cannot be undone unless you exported a backup."))return;
-        ["heldStateV1","heldScriptureWEBv1","heldDiagnosticsV1"].forEach(key=>localStorage.removeItem(key));
+        Object.keys(localStorage).filter(key=>key.startsWith("held")).forEach(key=>localStorage.removeItem(key));
         state=structuredClone(DEFAULT_STATE);
         render();
       },{capture:true});
