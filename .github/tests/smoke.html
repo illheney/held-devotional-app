@@ -18,7 +18,7 @@
 </head>
 <body>
   <div id="app"></div>
-  <script src="preflight.js"></script><script src="app.js"></script><script src="content.js"></script><script src="polish.js"></script><script src="onboarding-fix.js"></script><script src="scripture.js"></script><script src="journeys.js"></script><script src="journey-translation.js"></script><script src="growth.js"></script><script src="memory-sources.js"></script><script src="memories-core.js"></script><script src="memory-today.js"></script><script src="memory-actions.js"></script><script src="memory-journey.js"></script><script src="memory-settings.js"></script><script src="stability.js"></script><script src="content-polish.js"></script>
+  <script src="preflight.js"></script><script src="app.js"></script><script src="content.js"></script><script src="polish.js"></script><script src="onboarding-fix.js"></script><script src="scripture.js"></script><script src="journeys.js"></script><script src="journey-translation.js"></script><script src="growth.js"></script><script src="memory-sources.js"></script><script src="memories-core.js"></script><script src="memory-today.js"></script><script src="memory-actions.js"></script><script src="memory-journey.js"></script><script src="memory-settings.js"></script><script src="stability.js"></script><script src="content-polish.js"></script><script src="checkin-fix.js"></script>
   <script>
     (async()=>{
       const results=[];
@@ -37,9 +37,11 @@
         assert(state.profile.name==="Audit"&&!!state.profile.started,"Begin gently saves name and starts Held");
         assert(!!document.querySelector(".today-page"),"Today screen renders after onboarding");
         await click('[data-mood="low"]');await click('[data-need="anxious"]');
+        assert(document.querySelector('[data-mood="low"]')?.classList.contains("selected"),"selected mood is visible");
+        assert(document.querySelector('[data-need="anxious"]')?.classList.contains("selected"),"selected need is visible");
         const note=document.querySelector("#checkin-note");assert(!!note,"check-in note exists");note.value="I am worried about tomorrow";
         await click("#save-checkin");
-        if(!(state.checkin?.date===todayKey()&&Array.isArray(state.checkin?.needs)&&state.checkin.needs.includes("anxious"))) throw new Error(`daily check-in saves; got ${JSON.stringify(state.checkin)}`);
+        if(!(state.checkin?.date===todayKey()&&state.checkin?.mood==="low"&&Array.isArray(state.checkin?.needs)&&state.checkin.needs.includes("anxious"))) throw new Error(`daily check-in saves; got ${JSON.stringify(state.checkin)}`);
         results.push("PASS — daily check-in saves");
         const reflection=document.querySelector("#reflection");assert(!!reflection,"reflection field renders");reflection.value="I can release what I cannot control.";reflection.dispatchEvent(new Event("input",{bubbles:true}));
         await click("#complete-today");assert(currentEntry().completed===true,"daily devotional completes");await click('[data-helpful="yes"]');assert(currentEntry().helpful==="yes","helpfulness feedback saves");const dailyId=currentEntry().devotionalId;
@@ -50,7 +52,7 @@
         await click('[data-view="journey"]');await tick();await tick();assert(!!document.querySelector("#growth-journey-section"),"long-term growth section renders");
         await click('[data-view="settings"]');await tick();await tick();assert(!!document.querySelector("#memory-settings-card"),"Remembered Grace settings render");assert(!!document.querySelector("#scripture-offline-card"),"Offline Scripture settings render");const settingsName=document.querySelector("#settings-name");settingsName.value="Audit Two";await click("#save-settings");assert(state.profile.name==="Audit Two","settings save name");
         const old="2025-01-10";state.history.push({date:old,devotionalId:"peace-1",theme:"peace",completed:true,mood:"okay",needs:[],reflection:"",helpful:"yes"});state.journal.push({id:"audit-old-journal",date:old,text:"Private old words"});state.prayers.push({id:"audit-old-prayer",date:old,text:"Private old prayer",answered:true,answeredDate:"2025-02-10"});save();const memories=window.heldMemorySources();assert(memories.some(m=>m.type==="devotional")&&memories.some(m=>m.type==="journal")&&memories.some(m=>m.type==="prayer"),"Remembered Grace memory sources build");const privateMemory=memories.find(m=>m.type==="journal");assert(privateMemory.private===true&&!privateMemory.detail.includes("Private old words"),"private journal text is not exposed in memory metadata");
-        const stored=JSON.parse(localStorage.getItem("heldStateV1")||"{}");assert(stored.profile?.name==="Audit Two","state persists to localStorage");assert(document.documentElement.dataset.heldVersion==="1.7.0","v1.7 stability layer is active");assert(!(window.__heldBootErrors||[]).length,"no startup errors were captured");
+        const stored=JSON.parse(localStorage.getItem("heldStateV1")||"{}");assert(stored.profile?.name==="Audit Two","state persists to localStorage");assert(document.documentElement.dataset.heldVersion==="1.7.1","v1.7.1 stability layer is active");assert(!(window.__heldBootErrors||[]).length,"no startup errors were captured");
         document.body.dataset.auditStatus="pass";const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=results.join("\n");document.body.appendChild(pre);
       }catch(error){document.body.dataset.auditStatus="fail";const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=`FAIL — ${error.message}\n${results.join("\n")}`;document.body.appendChild(pre);console.error(error);}
     })();
