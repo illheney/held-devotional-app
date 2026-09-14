@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="/">
+  <title>Held Extended Audit</title>
+  <script>
+    localStorage.clear();
+    window.confirm=()=>true;
+    window.alert=message=>{ window.__auditAlert=String(message||""); };
+    try { if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.resolve({}); } catch {}
+    const realFetch=window.fetch.bind(window);
+    window.fetch=(input,init)=>{
+      const url=String(input?.url||input||"");
+      if(url.includes("bible-api.com")) return Promise.reject(new Error("Offline extended audit"));
+      return realFetch(input,init);
+    };
+    window.__downloadedBackup="";
+    const realAnchorClick=HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click=function(){
+      if(this.download){ window.__downloadedBackup=this.download; return; }
+      return realAnchorClick.call(this);
+    };
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="preflight.js"></script><script src="app.js"></script><script src="content.js"></script><script src="polish.js"></script><script src="onboarding-fix.js"></script><script src="scripture.js"></script><script src="journeys.js"></script><script src="journey-translation.js"></script><script src="growth.js"></script><script src="memory-sources.js"></script><script src="memories-core.js"></script><script src="memory-today.js"></script><script src="memory-actions.js"></script><script src="memory-journey.js"></script><script src="memory-settings.js"></script><script src="stability.js"></script><script src="content-polish.js"></script><script src="checkin-fix.js"></script><script src="journey-fix.js"></script>
+  <script>
+    (async()=>{
+      const results=[];
+      const tick=(ms=2)=>new Promise(r=>setTimeout(r,ms));
+      const assert=(ok,label)=>{ if(!ok) throw new Error(label); results.push(`PASS — ${label}`); };
+      const click=async selector=>{ const el=document.querySelector(selector); assert(!!el,`control exists: ${selector}`); el.click(); await tick(); return el; };
+      const change=async(el)=>{ el.dispatchEvent(new Event("change",{bubbles:true})); await tick(); };
+      try{
+        await tick();
+        const name=document.querySelector("#onboard-name"); name.value="Extended"; await click("#start-held");
+        await click('[data-mood="okay"]'); await click('[data-need="grateful"]'); await click("#save-checkin");
+        const firstId=currentEntry().devotionalId;
+
+        await click("#favorite-today");
+        assert(state.favorites.includes(firstId),"favorite adds today's devotional");
+        assert(document.querySelector("#favorite-today")?.textContent.includes("Saved"),"favorite state is visible");
+        await click("#favorite-today");
+        assert(!state.favorites.includes(firstId),"favorite removes today's devotional");
+
+        await click("#quiet-mode");
+        assert(document.body.classList.contains("quiet-mode"),"quiet mode turns on");
+        assert(document.querySelector("#quiet-mode")?.textContent.includes("Exit"),"quiet mode control changes label");
+        await click("#quiet-mode");
+        assert(!document.body.classList.contains("quiet-mode"),"quiet mode turns off");
+
+        await click("#redo-checkin");
+        assert(state.checkin===null,"re-check-in clears today's check-in");
+        assert(!!document.querySelector("#save-checkin"),"re-check-in returns to check-in controls");
+        await click('[data-mood="good"]'); await click('[data-need="faith"]'); await click("#save-checkin");
+        assert(state.checkin?.mood==="good"&&state.checkin?.needs?.includes("faith"),"re-check-in saves a new selection");
+
+        await click("#change-devotional");
+        assert(state.checkin===null,"different devotional returns to fresh check-in");
+        assert(!state.history.some(h=>h.date===todayKey()),"different devotional clears only today's active path");
+        await click('[data-mood="okay"]'); await click('[data-need="grateful"]'); await click("#save-checkin");
+
+        await click('[data-view="library"]');
+        const cards=[...document.querySelectorAll("#library-grid .library-card")];
+        assert(cards.length===DEVOTIONALS.length,"Library renders every devotional card");
+        const search=document.querySelector("#library-search");
+        search.value="peace"; search.dispatchEvent(new Event("input",{bubbles:true})); await tick();
+        const visibleAfterSearch=cards.filter(c=>!c.hidden);
+        assert(visibleAfterSearch.length>0&&visibleAfterSearch.length<cards.length,"Library search filters results");
+        search.value=""; search.dispatchEvent(new Event("input",{bubbles:true})); await tick();
+        await click('[data-library-theme="grief"]');
+        const visibleGrief=cards.filter(c=>!c.hidden);
+        assert(visibleGrief.length>0&&visibleGrief.every(c=>c.dataset.cardTheme==="grief"),"Library theme filter works");
+
+        await click('[data-view="settings"]'); await tick(); await tick();
+        const dark=document.querySelector("#dark-mode"); assert(!!dark,"dark mode setting renders");
+        dark.checked=true; await change(dark);
+        assert(state.profile.dark===true&&document.body.classList.contains("dark"),"dark mode saves and applies");
+
+        const textScale=document.querySelector("#text-scale");
+        textScale.value="1.1";
+        const settingsName=document.querySelector("#settings-name"); settingsName.value="Extended Two";
+        await click("#save-settings");
+        assert(state.profile.name==="Extended Two"&&Number(state.profile.textScale)===1.1,"name and text size settings save");
+
+        await click('[data-focus-theme="hope"]');
+        assert(state.profile.focusThemes.includes("hope"),"focus theme can be added");
+        await click('[data-view="settings"]'); await tick(); await tick();
+        await click('[data-focus-theme="hope"]');
+        assert(!state.profile.focusThemes.includes("hope"),"focus theme can be removed");
+        await click('[data-view="settings"]'); await tick(); await tick();
+        await click('[data-focus-theme="trust"]');
+        state.themeWeights={peace:5}; save(); render(); await tick(); await tick();
+        await click("#reset-learning");
+        assert(Object.keys(state.themeWeights).length===0&&!state.profile.focusThemes.length&&state.profile.learningSince===todayKey(),"recommendation learning can be reset without deleting history");
+
+        await click('[data-view="settings"]'); await tick(); await tick();
+        const memoryToggle=document.querySelector("#memory-enabled"); assert(!!memoryToggle,"Remembered Grace toggle renders");
+        memoryToggle.checked=false; await change(memoryToggle);
+        assert(state.memories.enabled===false,"Remembered Grace can be disabled");
+        await click('[data-memory-frequency="often"]');
+        assert(state.memories.frequency==="often","Remembered Grace frequency saves");
+
+        localStorage.setItem("heldScriptureWEBv1",JSON.stringify({"Psalm 23":{"text":"cached"}}));
+        await click("#clear-scripture-cache");
+        assert(!localStorage.getItem("heldScriptureWEBv1"),"downloaded Scripture cache can be cleared");
+
+        await click("#export-data");
+        assert(/^held-backup-\d{4}-\d{2}-\d{2}\.json$/.test(window.__downloadedBackup),"backup export creates the expected JSON download");
+
+        const beforeImportJournal=state.journal.length;
+        const backup={...JSON.parse(JSON.stringify(state)),profile:{...state.profile,name:"Imported Name"},journal:[...state.journal,{id:"import-audit",date:todayKey(),text:"Imported journal"}]};
+        const file=new File([JSON.stringify(backup)],"held-test.json",{type:"application/json"});
+        const input=document.querySelector("#import-data");
+        const transfer=new DataTransfer(); transfer.items.add(file); input.files=transfer.files; await change(input); await tick();
+        assert(state.profile.name==="Imported Name"&&state.journal.length===beforeImportJournal+1&&state.journal.some(j=>j.id==="import-audit"),"backup import restores supplied data");
+
+        await click('[data-view="settings"]'); await tick(); await tick();
+        localStorage.setItem("heldDiagnosticsV1",JSON.stringify([{message:"test"}]));
+        localStorage.setItem("heldExtraAuditKey","remove-me");
+        await click("#reset-data"); await tick();
+        assert(!Object.keys(localStorage).some(k=>k.startsWith("held")),"full reset clears every Held-owned localStorage key");
+        assert(!state.profile.started&&!!document.querySelector("#start-held"),"full reset returns Held to onboarding");
+
+        assert(!(window.__heldBootErrors||[]).length,"extended audit captured no startup errors");
+        document.body.dataset.auditStatus="pass";
+        const pre=document.createElement("pre"); pre.id="audit-results"; pre.textContent=results.join("\n"); document.body.appendChild(pre);
+      }catch(error){
+        document.body.dataset.auditStatus="fail";
+        const pre=document.createElement("pre"); pre.id="audit-results"; pre.textContent=`FAIL — ${error.message}\n${results.join("\n")}`; document.body.appendChild(pre);
+        console.error(error);
+      }
+    })();
+  </script>
+</body>
+</html>
