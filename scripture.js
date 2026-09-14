@@ -1,8 +1,9 @@
-/* Held v1.4 Scripture layer — public-domain World English Bible, cached on-device. */
+/* Held v1.7 Scripture layer — public-domain World English Bible, cached on-device. */
 (() => {
   const STORE_KEY = "heldScriptureWEBv1";
   const API_BASE = "https://bible-api.com/";
   const DOWNLOAD_DELAY_MS = 2250;
+  const REQUEST_TIMEOUT_MS = 12000;
 
   const readStore = () => {
     try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); }
@@ -25,7 +26,18 @@
       if (!key) throw new Error("Missing Scripture reference");
       const store = readStore();
       if (store[key]?.text) return store[key];
-      const response = await fetch(`${API_BASE}${encodeURIComponent(key)}?translation=web`, {headers:{"Accept":"application/json"}});
+
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
+      let response;
+      try {
+        response = await fetch(`${API_BASE}${encodeURIComponent(key)}?translation=web`, {
+          headers:{"Accept":"application/json"},
+          signal:controller?.signal
+        });
+      } finally {
+        if(timer) clearTimeout(timer);
+      }
       if (!response.ok) throw new Error(`Scripture request failed (${response.status})`);
       const data = await response.json();
       const entry = {
@@ -43,7 +55,7 @@
     count() { return Object.keys(readStore()).length; },
     clear() { localStorage.removeItem(STORE_KEY); },
     async downloadAll(onProgress) {
-      const refs = [...new Set((window.DEVOTIONALS || DEVOTIONALS || []).map(d => normalizeRef(d.ref)).filter(Boolean))];
+      const refs = [...new Set(DEVOTIONALS.map(d => normalizeRef(d.ref)).filter(Boolean))];
       const uncached = refs.filter(ref => !this.getCached(ref));
       let complete = refs.length - uncached.length, failed = 0;
       onProgress?.({complete,total:refs.length,failed,ref:null});
@@ -77,7 +89,7 @@
       panel.innerHTML = `<p>${escapeHtml(scripture.text).replace(/\n/g,"<br>")}</p><div class="scripture-credit"><span>${escapeHtml(scripture.reference)}</span><span>World English Bible · Public Domain</span></div>`;
       const hint = holder.querySelector(".muted.small");
       if (hint) hint.textContent = "Read slowly. Notice the word or phrase that keeps your attention.";
-    } catch (error) {
+    } catch {
       panel.innerHTML = `<div class="scripture-offline"><strong>${escapeHtml(devotional.ref)}</strong><p>This passage has not been saved on this device yet. Connect once to load it here, then Held will keep it available offline.</p><button class="chip" id="retry-scripture">Try again</button></div>`;
       panel.querySelector("#retry-scripture")?.addEventListener("click",()=>{ holder.dataset.scriptureReady=""; panel.remove(); renderScripture(); });
     }
@@ -85,13 +97,13 @@
 
   const addScriptureSettings = () => {
     if (state?.lastView !== "settings" || document.querySelector("#scripture-offline-card")) return;
-    const privacy = [...document.querySelectorAll(".card")].find(card => card.querySelector("h3")?.textContent?.trim() === "Privacy");
+    const privacy = [...document.querySelectorAll(".card")].find(card => (card.querySelector("h3")?.textContent||"").trim().startsWith("Privacy"));
     if (!privacy) return;
     const card = document.createElement("div");
     card.className = "card scripture-settings-card";
     card.id = "scripture-offline-card";
     const saved = window.heldScripture.count();
-    card.innerHTML = `<div class="card-kicker"><span class="mini-mark">☁︎</span><span>Offline Scripture</span></div><h3>Keep the Bible text with Held.</h3><p class="muted">Held uses the public-domain World English Bible. Only Scripture references—not journal, prayer, check-in, or profile data—are requested when a passage is first loaded.</p><div class="scripture-download-status"><strong>${saved}</strong><span>passages saved on this device</span></div><button class="btn full" id="download-scripture">Download all current passages</button><p class="small muted">The free Scripture service limits request speed, so a full first-time download can take a few minutes. You can leave Held open while it prepares the library.</p><button class="text-btn danger-text" id="clear-scripture-cache">Remove saved Scripture text</button>`;
+    card.innerHTML = `<div class="card-kicker"><span class="mini-mark">☁︎</span><span>Offline Scripture</span></div><h3>Keep the Bible text with Held.</h3><p class="muted">Held uses the public-domain World English Bible. Only Scripture references—not journal, prayer, check-in, or profile data—are requested when a passage is first loaded.</p><div class="scripture-download-status"><strong>${saved}</strong><span>passages saved on this device</span></div><button class="btn full" id="download-scripture">Download all current passages</button><p class="small muted">The free Scripture service limits request speed, so a full first-time download can take a few minutes. Keep Held open while it prepares the library.</p><button class="text-btn danger-text" id="clear-scripture-cache">Remove saved Scripture text</button>`;
     privacy.parentNode.insertBefore(card, privacy);
 
     card.querySelector("#download-scripture")?.addEventListener("click", async e => {
