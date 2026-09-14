@@ -12,11 +12,12 @@
     state.favorites = Array.isArray(state.favorites) ? state.favorites : [];
     state.themeWeights = state.themeWeights && typeof state.themeWeights === "object" ? state.themeWeights : {};
     state.lastView = typeof state.lastView === "string" ? state.lastView : "today";
+    state.libraryReadingId = typeof state.libraryReadingId === "string" ? state.libraryReadingId : null;
     state.journeys = state.journeys && typeof state.journeys === "object" ? state.journeys : {};
     state.journeys.progress = state.journeys.progress && typeof state.journeys.progress === "object" ? state.journeys.progress : {};
     state.journeys.notes = state.journeys.notes && typeof state.journeys.notes === "object" ? state.journeys.notes : {};
     state.growth = state.growth && typeof state.growth === "object" ? state.growth : {};
-    state.memories = state.memories && typeof state.memories === "object" ? state.memories : state.memories;
+    state.memories = state.memories && typeof state.memories === "object" ? state.memories : {};
   };
 
   normalizeState();
@@ -46,6 +47,37 @@
     toast?.(state.profile.name?`Welcome, ${state.profile.name}`:"Welcome to Held");
   };
 
+  const dailyTodayView=todayView;
+  const labelTheme=t=>({peace:"Peace",trust:"Trust",identity:"Identity",hope:"Hope",rest:"Rest",relationships:"Relationships",forgiveness:"Forgiveness",motherhood:"Family",purpose:"Purpose",courage:"Courage",gratitude:"Gratitude",faith:"Faith",grief:"Grief"}[t]||t||"");
+  const libraryPreviewView=()=>{
+    const d=DEVOTIONALS.find(x=>x.id===state.libraryReadingId);
+    if(!d){state.libraryReadingId=null;save();return dailyTodayView();}
+    return `<section class="today-page library-preview-page">
+      <div class="hero premium-hero"><div class="eyebrow">Library reading · ${escapeHtml(labelTheme(d.theme))}</div><h1>${escapeHtml(d.title)}</h1><p class="hero-whisper">A reading for right now. Your daily devotional stays exactly where you left it.</p></div>
+      <button class="text-btn" id="return-daily">← Return to today's devotional</button>
+      <article class="devotional-card">
+        <div class="devotional-head"><div class="theme-emblem">◌</div><div><div class="eyebrow">${escapeHtml(labelTheme(d.theme))} · Library</div><h2>${escapeHtml(d.title)}</h2><p class="theme-line">Browse without changing today's progress.</p></div></div>
+        <div class="premium-scripture"><span class="scripture-label">Scripture</span><strong>${escapeHtml(d.ref)}</strong><button class="copy-ref" id="copy-ref" data-ref="${escapeHtml(d.ref)}">Copy</button><p class="muted small">Read slowly. Held will load the passage here when available.</p></div>
+        <div class="devotional-body"><p>${escapeHtml(d.thought)}</p></div>
+        <div class="section-divider"><span>Reflect</span></div>
+        <ol class="reflection-prompts">${(d.questions||[]).map(q=>`<li>${escapeHtml(q)}</li>`).join("")}</ol>
+        <div class="practice-grid"><div class="practice-card"><span class="practice-icon">→</span><div><div class="eyebrow">Practice</div><p>${escapeHtml(d.action)}</p></div></div><div class="practice-card prayer-card"><span class="practice-icon">◌</span><div><div class="eyebrow">Prayer</div><p>${escapeHtml(d.prayer)}</p></div></div></div>
+        <div class="devotional-actions"><button class="btn full premium-cta" id="favorite-preview">${state.favorites.includes(d.id)?"Saved ♥":"Save for later ♡"}</button><button class="text-btn" id="return-daily-bottom">Return to today's devotional</button></div>
+      </article>
+    </section>`;
+  };
+
+  todayView=function(){ return state.libraryReadingId ? libraryPreviewView() : dailyTodayView(); };
+
+  const openLibraryPreview=id=>{
+    if(!DEVOTIONALS.some(d=>d.id===id))return;
+    state.libraryReadingId=id;
+    state.lastView="today";
+    save();
+    render();
+  };
+  const closeLibraryPreview=()=>{state.libraryReadingId=null;save();render();};
+
   const priorBind = bind;
   bind = function(){
     priorBind();
@@ -60,9 +92,40 @@
         button.style.pointerEvents="auto";
         button.onclick=e=>{e.preventDefault();e.stopPropagation();finishOnboarding();};
       }
-      if(form){
-        form.onsubmit=e=>{e.preventDefault();e.stopPropagation();finishOnboarding();};
-      }
+      if(form){ form.onsubmit=e=>{e.preventDefault();e.stopPropagation();finishOnboarding();}; }
+    }
+
+    document.querySelectorAll("[data-open-devotional]").forEach(button=>{
+      button.addEventListener("click",e=>{
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openLibraryPreview(button.dataset.openDevotional);
+      },{capture:true});
+    });
+
+    document.querySelectorAll("[data-view]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        if(state.libraryReadingId){state.libraryReadingId=null;save();}
+      },{capture:true});
+    });
+
+    document.querySelector("#return-daily")?.addEventListener("click",closeLibraryPreview);
+    document.querySelector("#return-daily-bottom")?.addEventListener("click",closeLibraryPreview);
+    document.querySelector("#favorite-preview")?.addEventListener("click",()=>{
+      const id=state.libraryReadingId;if(!id)return;
+      state.favorites=state.favorites.includes(id)?state.favorites.filter(x=>x!==id):[...state.favorites,id];
+      save();render();
+    });
+
+    const reset=document.querySelector("#reset-data");
+    if(reset){
+      reset.addEventListener("click",e=>{
+        e.preventDefault();e.stopImmediatePropagation();
+        if(!confirm("Delete all Held data from this device? This cannot be undone unless you exported a backup."))return;
+        ["heldStateV1","heldScriptureWEBv1","heldDiagnosticsV1"].forEach(key=>localStorage.removeItem(key));
+        state=structuredClone(DEFAULT_STATE);
+        render();
+      },{capture:true});
     }
   };
 
