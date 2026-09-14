@@ -1,6 +1,6 @@
-/* Held v1.7 — stability layer and defensive state migration. */
+/* Held v1.7.1 — stability layer and defensive state migration. */
 (() => {
-  const VERSION = "1.7.0";
+  const VERSION = "1.7.1";
 
   const normalizeState = () => {
     state = state && typeof state === "object" ? state : {};
