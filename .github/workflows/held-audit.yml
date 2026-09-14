@@ -8,7 +8,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - name: Check out Held
         uses: actions/checkout@v4
@@ -33,7 +33,11 @@ jobs:
             echo "Chrome/Chromium is not available on this runner."
             exit 1
           fi
-          "$CHROME" --headless --no-sandbox --disable-gpu --virtual-time-budget=20000 --dump-dom \
-            http://127.0.0.1:8765/.github/tests/smoke.html > /tmp/held-smoke.html
-          cat /tmp/held-smoke.html | grep -A3 -B3 'audit-results' || true
+          if ! timeout 45s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=20000 --dump-dom \
+            http://127.0.0.1:8765/.github/tests/smoke.html > /tmp/held-smoke.html; then
+            echo "Browser audit timed out or Chrome failed."
+            tail -100 /tmp/held-server.log || true
+            exit 1
+          fi
+          grep -A8 -B3 'audit-results' /tmp/held-smoke.html || true
           grep -q 'data-audit-status="pass"' /tmp/held-smoke.html
