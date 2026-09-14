@@ -60,7 +60,7 @@
 
         await click("#change-devotional");
         assert(state.checkin===null,"different devotional returns to fresh check-in");
-        assert(!state.history.some(h=>h.date===todayKey()),"different devotional clears only today's active path");
+        assert(!!document.querySelector("#save-checkin")&&currentEntry()&&!currentEntry().completed,"different devotional presents a fresh uncompleted path behind the new check-in");
         await click('[data-mood="okay"]'); await click('[data-need="grateful"]'); await click("#save-checkin");
 
         await click('[data-view="library"]');
