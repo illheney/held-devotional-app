@@ -74,8 +74,9 @@
   const renderScripture = async () => {
     const holder = document.querySelector(".premium-scripture");
     if (!holder || holder.dataset.scriptureReady === "1") return;
-    const entry = typeof currentEntry === "function" ? currentEntry() : null;
-    const devotional = entry ? DEVOTIONALS.find(d => d.id === entry.devotionalId) : null;
+    const preview = state?.libraryReadingId ? DEVOTIONALS.find(d=>d.id===state.libraryReadingId) : null;
+    const entry = !preview && typeof currentEntry === "function" ? currentEntry() : null;
+    const devotional = preview || (entry ? DEVOTIONALS.find(d => d.id === entry.devotionalId) : null);
     if (!devotional?.ref) return;
 
     holder.dataset.scriptureReady = "1";
