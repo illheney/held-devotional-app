@@ -8,7 +8,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Check out Held
         uses: actions/checkout@v4
@@ -25,11 +25,25 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check -q websocket-client
 
-      - name: Browser interaction smoke test
+      - name: Start local Held server
+        run: |
+          python3 -m http.server 8765 >/tmp/held-server.log 2>&1 &
+          echo $! > /tmp/held-server.pid
+          sleep 2
+
+      - name: Primary browser interaction audit
         run: |
           set -euo pipefail
-          python3 -m http.server 8765 >/tmp/held-server.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID || true' EXIT
-          sleep 2
           timeout 45s python3 .github/tests/run_browser_audit.py
+
+      - name: Secondary controls browser audit
+        env:
+          HELD_AUDIT_URL: http://127.0.0.1:8765/.github/tests/extended.html
+        run: |
+          set -euo pipefail
+          timeout 45s python3 .github/tests/run_browser_audit.py
+
+      - name: Stop local Held server
+        if: always()
+        run: |
+          if [ -f /tmp/held-server.pid ]; then kill "$(cat /tmp/held-server.pid)" || true; fi
