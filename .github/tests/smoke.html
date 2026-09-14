@@ -16,6 +16,7 @@
 </head>
 <body>
   <div id="app"></div>
+  <script src="../../preflight.js"></script>
   <script src="../../app.js"></script>
   <script src="../../content.js"></script>
   <script src="../../polish.js"></script>
@@ -35,11 +36,11 @@
   <script>
     (async()=>{
       const results=[];
-      const wait=(ms=60)=>new Promise(r=>setTimeout(r,ms));
+      const wait=(ms=70)=>new Promise(r=>setTimeout(r,ms));
       const assert=(ok,label)=>{if(!ok)throw new Error(label);results.push(`PASS — ${label}`);};
       const click=async selector=>{const el=document.querySelector(selector);assert(!!el,`control exists: ${selector}`);el.click();await wait();return el;};
       try{
-        await wait(150);
+        await wait(180);
         assert(DEVOTIONALS.length===104,"104 devotionals loaded");
         assert(new Set(DEVOTIONALS.map(d=>d.id)).size===104,"devotional IDs are unique");
         assert(Array.isArray(window.HELD_JOURNEYS)&&window.HELD_JOURNEYS.length===7,"7 Guided Journeys loaded");
@@ -51,7 +52,7 @@
         assert(!!begin&&!begin.disabled,"Begin gently renders enabled");
         name.value="Audit";
         begin.click();
-        await wait(120);
+        await wait(140);
         assert(state.profile.name==="Audit"&&!!state.profile.started,"Begin gently saves name and starts Held");
         assert(!!document.querySelector(".today-page"),"Today screen renders after onboarding");
 
@@ -71,6 +72,7 @@
         assert(currentEntry().completed===true,"daily devotional completes");
         await click('[data-helpful="yes"]');
         assert(currentEntry().helpful==="yes","helpfulness feedback saves");
+        const dailyId=currentEntry().devotionalId;
 
         await click('[data-view="journal"]');
         const journal=document.querySelector("#journal-text");
@@ -89,6 +91,15 @@
         await click('[data-view="library"]');
         assert(!!document.querySelector("#library-search"),"library search renders");
         assert(!!document.querySelector(".journeys-shelf"),"Guided Journeys shelf renders");
+        const libraryOpen=[...document.querySelectorAll("[data-open-devotional]")].find(b=>b.dataset.openDevotional!==dailyId);
+        assert(!!libraryOpen,"Library devotional can be selected");
+        libraryOpen.click();await wait(120);
+        assert(!!document.querySelector(".library-preview-page"),"Library devotional opens as a preview");
+        assert(currentEntry().devotionalId===dailyId&&currentEntry().completed===true,"Library preview preserves today's completed devotional");
+        await click("#return-daily");
+        assert(currentEntry().devotionalId===dailyId,"Return to today restores the original daily path");
+
+        await click('[data-view="library"]');
         const journeyButton=document.querySelector("[data-open-journey]");
         assert(!!journeyButton,"Journey can be opened");
         journeyButton.click();await wait();
@@ -100,11 +111,11 @@
         assert((state.journeys.progress[journeyId]?.completed||[]).includes(1),"Journey day completes");
 
         await click('[data-view="journey"]');
-        await wait(120);
+        await wait(140);
         assert(!!document.querySelector("#growth-journey-section"),"long-term growth section renders");
 
         await click('[data-view="settings"]');
-        await wait(120);
+        await wait(140);
         assert(!!document.querySelector("#memory-settings-card"),"Remembered Grace settings render");
         assert(!!document.querySelector("#scripture-offline-card"),"Offline Scripture settings render");
         const settingsName=document.querySelector("#settings-name");
