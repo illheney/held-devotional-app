@@ -1,65 +1,105 @@
+import json
 import os
 import shutil
+import subprocess
 import sys
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+import tempfile
+import time
+import urllib.parse
+import urllib.request
+import websocket
 
 URL = os.environ.get("HELD_AUDIT_URL", "http://127.0.0.1:8765/.github/tests/smoke.html")
-
-chromedriver = shutil.which("chromedriver")
-if not chromedriver:
-    raise SystemExit("chromedriver is not installed or not on PATH")
-
-chrome_binary = (
+PORT = 9222
+chrome = (
     os.environ.get("HELD_CHROME_BINARY")
     or shutil.which("google-chrome")
     or shutil.which("google-chrome-stable")
     or shutil.which("chromium")
     or shutil.which("chromium-browser")
 )
-if not chrome_binary:
+if not chrome:
     raise SystemExit("Chrome/Chromium is not installed or not on PATH")
 
-print(f"Using Chrome: {chrome_binary}")
-print(f"Using ChromeDriver: {chromedriver}")
+profile = tempfile.mkdtemp(prefix="held-chrome-")
+process = subprocess.Popen([
+    chrome,
+    "--headless=new",
+    "--no-sandbox",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-background-networking",
+    "--disable-component-update",
+    "--disable-sync",
+    "--metrics-recording-only",
+    "--no-first-run",
+    "--remote-allow-origins=*",
+    f"--remote-debugging-port={PORT}",
+    f"--user-data-dir={profile}",
+    "about:blank",
+], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-options = Options()
-options.binary_location = chrome_binary
-options.page_load_strategy = "eager"
-options.add_argument("--headless=new")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-gpu")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-background-networking")
-options.add_argument("--disable-component-update")
-options.add_argument("--disable-sync")
-options.add_argument("--metrics-recording-only")
-options.add_argument("--no-first-run")
-options.add_argument("--window-size=390,844")
+next_id = 0
 
-service = Service(executable_path=chromedriver)
-driver = webdriver.Chrome(service=service, options=options)
-driver.set_page_load_timeout(15)
-driver.set_script_timeout(15)
+def http_json(path, method="GET"):
+    req = urllib.request.Request(f"http://127.0.0.1:{PORT}{path}", method=method)
+    with urllib.request.urlopen(req, timeout=3) as response:
+        return json.load(response)
+
+def command(ws, method, params=None, timeout=5):
+    global next_id
+    next_id += 1
+    ident = next_id
+    ws.send(json.dumps({"id": ident, "method": method, "params": params or {}}))
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        message = json.loads(ws.recv())
+        if message.get("id") == ident:
+            if "error" in message:
+                raise RuntimeError(message["error"])
+            return message.get("result", {})
+    raise TimeoutError(f"CDP command timed out: {method}")
+
+def evaluate(ws, expression):
+    result = command(ws, "Runtime.evaluate", {"expression": expression, "returnByValue": True, "awaitPromise": True})
+    return result.get("result", {}).get("value")
 
 try:
-    driver.get(URL)
-    WebDriverWait(driver, 20).until(lambda d: d.find_elements(By.ID, "audit-results"))
-    body = driver.find_element(By.TAG_NAME, "body")
-    status = body.get_attribute("data-audit-status")
-    result = driver.find_element(By.ID, "audit-results").text
-    print(result)
-    print(f"HELD BROWSER AUDIT STATUS: {status}")
-    if status != "pass":
-        print("Browser console entries:")
+    deadline = time.time() + 12
+    while True:
         try:
-            for entry in driver.get_log("browser"):
-                print(entry)
+            http_json("/json/version")
+            break
         except Exception:
-            pass
-        sys.exit(1)
+            if time.time() >= deadline:
+                raise RuntimeError("Chrome DevTools endpoint did not start")
+            time.sleep(0.2)
+
+    encoded = urllib.parse.quote(URL, safe=":/?=&")
+    page = http_json(f"/json/new?{encoded}", method="PUT")
+    ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=5, origin="http://127.0.0.1")
+    try:
+        command(ws, "Runtime.enable")
+        command(ws, "Page.enable")
+        deadline = time.time() + 25
+        status = ""
+        while time.time() < deadline:
+            status = evaluate(ws, "document.body && document.body.dataset.auditStatus || ''") or ""
+            if status in ("pass", "fail"):
+                break
+            time.sleep(0.15)
+        result = evaluate(ws, "document.getElementById('audit-results')?.innerText || ''") or ""
+        print(result)
+        print(f"HELD BROWSER AUDIT STATUS: {status or 'timeout'}")
+        if status != "pass":
+            boot_errors = evaluate(ws, "JSON.stringify(window.__heldBootErrors || [])") or "[]"
+            print(f"Boot errors: {boot_errors}")
+            sys.exit(1)
+    finally:
+        ws.close()
 finally:
-    driver.quit()
+    process.terminate()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
