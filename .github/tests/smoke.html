@@ -7,9 +7,7 @@
   <title>Held Smoke Audit</title>
   <script>
     localStorage.clear();
-    try {
-      if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.resolve({});
-    } catch {}
+    try { if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.resolve({}); } catch {}
     const realFetch=window.fetch.bind(window);
     window.fetch=(input,init)=>{
       const url=String(input?.url||input||"");
@@ -20,23 +18,7 @@
 </head>
 <body>
   <div id="app"></div>
-  <script src="preflight.js"></script>
-  <script src="app.js"></script>
-  <script src="content.js"></script>
-  <script src="polish.js"></script>
-  <script src="onboarding-fix.js"></script>
-  <script src="scripture.js"></script>
-  <script src="journeys.js"></script>
-  <script src="journey-translation.js"></script>
-  <script src="growth.js"></script>
-  <script src="memory-sources.js"></script>
-  <script src="memories-core.js"></script>
-  <script src="memory-today.js"></script>
-  <script src="memory-actions.js"></script>
-  <script src="memory-journey.js"></script>
-  <script src="memory-settings.js"></script>
-  <script src="stability.js"></script>
-  <script src="content-polish.js"></script>
+  <script src="preflight.js"></script><script src="app.js"></script><script src="content.js"></script><script src="polish.js"></script><script src="onboarding-fix.js"></script><script src="scripture.js"></script><script src="journeys.js"></script><script src="journey-translation.js"></script><script src="growth.js"></script><script src="memory-sources.js"></script><script src="memories-core.js"></script><script src="memory-today.js"></script><script src="memory-actions.js"></script><script src="memory-journey.js"></script><script src="memory-settings.js"></script><script src="stability.js"></script><script src="content-polish.js"></script>
   <script>
     (async()=>{
       const results=[];
@@ -49,106 +31,28 @@
         assert(new Set(DEVOTIONALS.map(d=>d.id)).size===104,"devotional IDs are unique");
         assert(Array.isArray(window.HELD_JOURNEYS)&&window.HELD_JOURNEYS.length===7,"7 Guided Journeys loaded");
         assert(window.HELD_JOURNEYS.every(j=>j.days.every(id=>DEVOTIONALS.some(d=>d.id===id))),"all Journey days resolve to devotionals");
-
-        const name=document.querySelector("#onboard-name");
-        const begin=document.querySelector("#start-held");
-        assert(!!name,"onboarding name field renders");
-        assert(!!begin&&!begin.disabled,"Begin gently renders enabled");
-        name.value="Audit";
-        begin.click();
-        await tick();
+        const name=document.querySelector("#onboard-name"),begin=document.querySelector("#start-held");
+        assert(!!name,"onboarding name field renders");assert(!!begin&&!begin.disabled,"Begin gently renders enabled");
+        name.value="Audit";begin.click();await tick();
         assert(state.profile.name==="Audit"&&!!state.profile.started,"Begin gently saves name and starts Held");
         assert(!!document.querySelector(".today-page"),"Today screen renders after onboarding");
-
-        await click('[data-mood="low"]');
-        await click('[data-need="anxious"]');
-        const note=document.querySelector("#checkin-note");
-        assert(!!note,"check-in note exists");
-        note.value="I am worried about tomorrow";
+        await click('[data-mood="low"]');await click('[data-need="anxious"]');
+        const note=document.querySelector("#checkin-note");assert(!!note,"check-in note exists");note.value="I am worried about tomorrow";
         await click("#save-checkin");
-        assert(state.checkin?.date===todayKey()&&state.checkin.needs.includes("anxious"),"daily check-in saves");
-
-        const reflection=document.querySelector("#reflection");
-        assert(!!reflection,"reflection field renders");
-        reflection.value="I can release what I cannot control.";
-        reflection.dispatchEvent(new Event("input",{bubbles:true}));
-        await click("#complete-today");
-        assert(currentEntry().completed===true,"daily devotional completes");
-        await click('[data-helpful="yes"]');
-        assert(currentEntry().helpful==="yes","helpfulness feedback saves");
-        const dailyId=currentEntry().devotionalId;
-
-        await click('[data-view="journal"]');
-        const journal=document.querySelector("#journal-text");
-        journal.value="A test journal entry";
-        await click("#save-journal");
-        assert(state.journal.some(j=>j.text==="A test journal entry"),"journal entry saves");
-
-        await click('[data-view="prayers"]');
-        const prayer=document.querySelector("#prayer-text");
-        prayer.value="A test prayer";
-        await click("#save-prayer");
-        assert(state.prayers.some(p=>p.text==="A test prayer"),"prayer saves");
-        await click("[data-prayer-toggle]");
-        assert(state.prayers.some(p=>p.text==="A test prayer"&&p.answered),"prayer can be marked answered");
-
-        await click('[data-view="library"]');
-        assert(!!document.querySelector("#library-search"),"library search renders");
-        assert(!!document.querySelector(".journeys-shelf"),"Guided Journeys shelf renders");
-        const libraryOpen=[...document.querySelectorAll("[data-open-devotional]")].find(b=>b.dataset.openDevotional!==dailyId);
-        assert(!!libraryOpen,"Library devotional can be selected");
-        libraryOpen.click();await tick();
-        assert(!!document.querySelector(".library-preview-page"),"Library devotional opens as a preview");
-        assert(currentEntry().devotionalId===dailyId&&currentEntry().completed===true,"Library preview preserves today's completed devotional");
-        await click("#return-daily");
-        assert(currentEntry().devotionalId===dailyId,"Return to today restores the original daily path");
-
-        await click('[data-view="library"]');
-        const journeyButton=document.querySelector("[data-open-journey]");
-        assert(!!journeyButton,"Journey can be opened");
-        journeyButton.click();await tick();
-        assert(!!document.querySelector(".journey-detail"),"Journey detail opens");
-        await click("[data-start-journey]");
-        assert(!!document.querySelector(".journey-reading"),"Journey Day 1 opens");
-        const journeyId=state.journeys.screen?.id;
-        await click("#complete-journey-day");
-        assert((state.journeys.progress[journeyId]?.completed||[]).includes(1),"Journey day completes");
-
-        await click('[data-view="journey"]');
-        await tick();await tick();
-        assert(!!document.querySelector("#growth-journey-section"),"long-term growth section renders");
-
-        await click('[data-view="settings"]');
-        await tick();await tick();
-        assert(!!document.querySelector("#memory-settings-card"),"Remembered Grace settings render");
-        assert(!!document.querySelector("#scripture-offline-card"),"Offline Scripture settings render");
-        const settingsName=document.querySelector("#settings-name");
-        settingsName.value="Audit Two";
-        await click("#save-settings");
-        assert(state.profile.name==="Audit Two","settings save name");
-
-        const old="2025-01-10";
-        state.history.push({date:old,devotionalId:"peace-1",theme:"peace",completed:true,mood:"okay",needs:[],reflection:"",helpful:"yes"});
-        state.journal.push({id:"audit-old-journal",date:old,text:"Private old words"});
-        state.prayers.push({id:"audit-old-prayer",date:old,text:"Private old prayer",answered:true,answeredDate:"2025-02-10"});
-        save();
-        const memories=window.heldMemorySources();
-        assert(memories.some(m=>m.type==="devotional")&&memories.some(m=>m.type==="journal")&&memories.some(m=>m.type==="prayer"),"Remembered Grace memory sources build");
-        const privateMemory=memories.find(m=>m.type==="journal");
-        assert(privateMemory.private===true&&!privateMemory.detail.includes("Private old words"),"private journal text is not exposed in memory metadata");
-
-        const stored=JSON.parse(localStorage.getItem("heldStateV1")||"{}");
-        assert(stored.profile?.name==="Audit Two","state persists to localStorage");
-        assert(document.documentElement.dataset.heldVersion==="1.7.0","v1.7 stability layer is active");
-        assert(!(window.__heldBootErrors||[]).length,"no startup errors were captured");
-
-        document.body.dataset.auditStatus="pass";
-        const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=results.join("\n");document.body.appendChild(pre);
-      }catch(error){
-        document.body.dataset.auditStatus="fail";
-        const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=`FAIL — ${error.message}\n${results.join("\n")}`;document.body.appendChild(pre);
-        console.error(error);
-      }
+        if(!(state.checkin?.date===todayKey()&&Array.isArray(state.checkin?.needs)&&state.checkin.needs.includes("anxious"))) throw new Error(`daily check-in saves; got ${JSON.stringify(state.checkin)}`);
+        results.push("PASS — daily check-in saves");
+        const reflection=document.querySelector("#reflection");assert(!!reflection,"reflection field renders");reflection.value="I can release what I cannot control.";reflection.dispatchEvent(new Event("input",{bubbles:true}));
+        await click("#complete-today");assert(currentEntry().completed===true,"daily devotional completes");await click('[data-helpful="yes"]');assert(currentEntry().helpful==="yes","helpfulness feedback saves");const dailyId=currentEntry().devotionalId;
+        await click('[data-view="journal"]');const journal=document.querySelector("#journal-text");journal.value="A test journal entry";await click("#save-journal");assert(state.journal.some(j=>j.text==="A test journal entry"),"journal entry saves");
+        await click('[data-view="prayers"]');const prayer=document.querySelector("#prayer-text");prayer.value="A test prayer";await click("#save-prayer");assert(state.prayers.some(p=>p.text==="A test prayer"),"prayer saves");await click("[data-prayer-toggle]");assert(state.prayers.some(p=>p.text==="A test prayer"&&p.answered),"prayer can be marked answered");
+        await click('[data-view="library"]');assert(!!document.querySelector("#library-search"),"library search renders");assert(!!document.querySelector(".journeys-shelf"),"Guided Journeys shelf renders");const libraryOpen=[...document.querySelectorAll("[data-open-devotional]")].find(b=>b.dataset.openDevotional!==dailyId);assert(!!libraryOpen,"Library devotional can be selected");libraryOpen.click();await tick();assert(!!document.querySelector(".library-preview-page"),"Library devotional opens as a preview");assert(currentEntry().devotionalId===dailyId&&currentEntry().completed===true,"Library preview preserves today's completed devotional");await click("#return-daily");assert(currentEntry().devotionalId===dailyId,"Return to today restores the original daily path");
+        await click('[data-view="library"]');const journeyButton=document.querySelector("[data-open-journey]");assert(!!journeyButton,"Journey can be opened");journeyButton.click();await tick();assert(!!document.querySelector(".journey-detail"),"Journey detail opens");await click("[data-start-journey]");assert(!!document.querySelector(".journey-reading"),"Journey Day 1 opens");const journeyId=state.journeys.screen?.id;await click("#complete-journey-day");assert((state.journeys.progress[journeyId]?.completed||[]).includes(1),"Journey day completes");
+        await click('[data-view="journey"]');await tick();await tick();assert(!!document.querySelector("#growth-journey-section"),"long-term growth section renders");
+        await click('[data-view="settings"]');await tick();await tick();assert(!!document.querySelector("#memory-settings-card"),"Remembered Grace settings render");assert(!!document.querySelector("#scripture-offline-card"),"Offline Scripture settings render");const settingsName=document.querySelector("#settings-name");settingsName.value="Audit Two";await click("#save-settings");assert(state.profile.name==="Audit Two","settings save name");
+        const old="2025-01-10";state.history.push({date:old,devotionalId:"peace-1",theme:"peace",completed:true,mood:"okay",needs:[],reflection:"",helpful:"yes"});state.journal.push({id:"audit-old-journal",date:old,text:"Private old words"});state.prayers.push({id:"audit-old-prayer",date:old,text:"Private old prayer",answered:true,answeredDate:"2025-02-10"});save();const memories=window.heldMemorySources();assert(memories.some(m=>m.type==="devotional")&&memories.some(m=>m.type==="journal")&&memories.some(m=>m.type==="prayer"),"Remembered Grace memory sources build");const privateMemory=memories.find(m=>m.type==="journal");assert(privateMemory.private===true&&!privateMemory.detail.includes("Private old words"),"private journal text is not exposed in memory metadata");
+        const stored=JSON.parse(localStorage.getItem("heldStateV1")||"{}");assert(stored.profile?.name==="Audit Two","state persists to localStorage");assert(document.documentElement.dataset.heldVersion==="1.7.0","v1.7 stability layer is active");assert(!(window.__heldBootErrors||[]).length,"no startup errors were captured");
+        document.body.dataset.auditStatus="pass";const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=results.join("\n");document.body.appendChild(pre);
+      }catch(error){document.body.dataset.auditStatus="fail";const pre=document.createElement("pre");pre.id="audit-results";pre.textContent=`FAIL — ${error.message}\n${results.join("\n")}`;document.body.appendChild(pre);console.error(error);}
     })();
   </script>
 </body>
