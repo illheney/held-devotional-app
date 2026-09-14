@@ -1,4 +1,4 @@
-/* Held v1.7 content presentation helpers. Startup order now lives in index.html. */
+/* Held v1.7.1 content presentation helpers. Startup order now lives in index.html. */
 (() => {
   const labelForLevel = level => ({1:"Foundation",2:"Growing",3:"Deeper",4:"Rooted"}[level] || "Deeper");
   let scheduled=false;
@@ -22,8 +22,8 @@
       if (el.children.length !== 0) return;
       const text=el.textContent||"";
       let next=text;
-      if (/Held 1\.\d+\.\d+/.test(text)) next=text.replace(/Held 1\.\d+\.\d+/,"Held 1.7.0");
-      else if (/Held v1\.\d+(?:\.\d+)?/.test(text)) next=text.replace(/Held v1\.\d+(?:\.\d+)?/,"Held v1.7");
+      if (/Held 1\.\d+\.\d+/.test(text)) next=text.replace(/Held 1\.\d+\.\d+/,"Held 1.7.1");
+      else if (/Held v1\.\d+(?:\.\d+)?/.test(text)) next=text.replace(/Held v1\.\d+(?:\.\d+)?/,"Held v1.7.1");
       setTextIfChanged(el,next);
     });
 
