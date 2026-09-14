@@ -37,24 +37,26 @@
     toast?.(state.profile.name ? `Welcome, ${state.profile.name}` : "Welcome to Held");
   };
 
-  bind = function(){
-    originalBind();
+  const bindFirstRun = () => {
     const form = document.querySelector("#held-onboarding-form");
-    const button = document.querySelector("#start-held");
-    if (form) {
-      form.onsubmit = e => {
-        e.preventDefault();
-        e.stopPropagation();
-        finishOnboarding();
-      };
+    const input = document.querySelector("#onboard-name");
+    if (!form || !input) return;
+    input.disabled = false;
+    input.readOnly = false;
+    input.setAttribute("aria-label", "First name");
+    form.onsubmit = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      finishOnboarding();
+    };
+  };
+
+  bind = function(){
+    if (!state?.profile?.started) {
+      bindFirstRun();
+      return;
     }
-    if (button) {
-      button.onclick = e => {
-        e.preventDefault();
-        e.stopPropagation();
-        finishOnboarding();
-      };
-    }
+    originalBind();
   };
 
   const originalRender = render;
@@ -62,12 +64,7 @@
     originalRender();
     const firstRun = !state?.profile?.started;
     document.body.classList.toggle("onboarding-mode", firstRun);
-    const input = document.querySelector("#onboard-name");
-    if (input) {
-      input.disabled = false;
-      input.readOnly = false;
-      input.setAttribute("aria-label", "First name");
-    }
+    if (firstRun) bindFirstRun();
   };
 
   render();
