@@ -1,4 +1,4 @@
-const CACHE="held-v1.7.1";
+const CACHE="held-v1.7.1-final";
 const ASSETS=["./","./index.html","./styles.css","./polish.css","./onboarding-fix.css","./journeys.css","./growth.css","./memories.css","./preflight.js","./app.js","./content.js","./polish.js","./onboarding-fix.js","./scripture.js","./journeys.js","./journey-translation.js","./growth.js","./memory-sources.js","./memories-core.js","./memory-today.js","./memory-actions.js","./memory-journey.js","./memory-settings.js","./stability.js","./content-polish.js","./checkin-fix.js","./journey-fix.js","./manifest.webmanifest","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png"];
 
 self.addEventListener("install",event=>{
