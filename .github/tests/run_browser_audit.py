@@ -9,7 +9,26 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 URL = os.environ.get("HELD_AUDIT_URL", "http://127.0.0.1:8765/.github/tests/smoke.html")
 
+chromedriver = shutil.which("chromedriver")
+if not chromedriver:
+    raise SystemExit("chromedriver is not installed or not on PATH")
+
+chrome_binary = (
+    os.environ.get("HELD_CHROME_BINARY")
+    or shutil.which("google-chrome")
+    or shutil.which("google-chrome-stable")
+    or shutil.which("chromium")
+    or shutil.which("chromium-browser")
+)
+if not chrome_binary:
+    raise SystemExit("Chrome/Chromium is not installed or not on PATH")
+
+print(f"Using Chrome: {chrome_binary}")
+print(f"Using ChromeDriver: {chromedriver}")
+
 options = Options()
+options.binary_location = chrome_binary
+options.page_load_strategy = "eager"
 options.add_argument("--headless=new")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-gpu")
@@ -21,9 +40,10 @@ options.add_argument("--metrics-recording-only")
 options.add_argument("--no-first-run")
 options.add_argument("--window-size=390,844")
 
-chromedriver = shutil.which("chromedriver")
-service = Service(executable_path=chromedriver) if chromedriver else Service()
+service = Service(executable_path=chromedriver)
 driver = webdriver.Chrome(service=service, options=options)
+driver.set_page_load_timeout(15)
+driver.set_script_timeout(15)
 
 try:
     driver.get(URL)
