@@ -1,0 +1,39 @@
+name: Held Audit
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out Held
+        uses: actions/checkout@v4
+
+      - name: Syntax and asset audit
+        run: |
+          set -euo pipefail
+          for file in *.js; do
+            node --check "$file"
+          done
+          python3 .github/tests/static_audit.py
+
+      - name: Browser interaction smoke test
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 >/tmp/held-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 2
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -z "$CHROME" ]; then
+            echo "Chrome/Chromium is not available on this runner."
+            exit 1
+          fi
+          "$CHROME" --headless --no-sandbox --disable-gpu --virtual-time-budget=20000 --dump-dom \
+            http://127.0.0.1:8765/.github/tests/smoke.html > /tmp/held-smoke.html
+          cat /tmp/held-smoke.html | grep -A3 -B3 'audit-results' || true
+          grep -q 'data-audit-status="pass"' /tmp/held-smoke.html
