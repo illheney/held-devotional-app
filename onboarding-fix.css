@@ -1,10 +1,11 @@
-/* Held v1.6.2 onboarding input hardening */
+/* Held v1.7 onboarding input and action hardening */
 body.onboarding-mode .topbar,body.onboarding-mode .bottom-nav{display:none}
 body.onboarding-mode{padding-bottom:0}
 .onboarding-card{position:relative;z-index:2}
 .onboarding-card label{cursor:text}
 #onboard-name{position:relative;z-index:3;display:block;min-height:52px;font-size:16px!important;line-height:1.25;background:#fffdf9!important;color:var(--ink)!important;opacity:1!important;pointer-events:auto!important;touch-action:manipulation;-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none}
 #onboard-name:focus{outline:3px solid color-mix(in srgb,var(--sage) 26%,transparent);outline-offset:2px;border-color:var(--sage)}
+#start-held{position:relative;z-index:4;min-height:54px;pointer-events:auto!important;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .onboarding-name-help{margin:.4rem 0 0}
 body.dark #onboard-name{background:var(--card)!important;color:var(--ink)!important}
 @media(max-width:620px){.onboarding{padding-left:2px;padding-right:2px}.value-grid{grid-template-columns:1fr}.onboarding-card{padding:19px}}
