@@ -44,17 +44,19 @@ required=[
     'preflight.js','app.js','content.js','polish.js','onboarding-fix.js','scripture.js','journeys.js',
     'journey-translation.js','growth.js','memory-sources.js','memories-core.js',
     'memory-today.js','memory-actions.js','memory-journey.js','memory-settings.js',
-    'stability.js','content-polish.js','checkin-fix.js'
+    'stability.js','content-polish.js','checkin-fix.js','journey-fix.js'
 ]
 for ref in required:
     check(ref in script_refs,f'required runtime module not loaded by index: {ref}')
 
 check(script_refs and script_refs[0]=='preflight.js','preflight must load before app.js')
-check(script_refs and script_refs[-1]=='checkin-fix.js','deterministic check-in fix must load last')
+check(script_refs[-2:]==['checkin-fix.js','journey-fix.js'],'deterministic interaction fixes must load last')
 check('catch(()=>{})' not in (root/'content-polish.js').read_text(),'content-polish must not silently swallow module-load failures')
 check('held-v1.7.1' in sw,'service worker cache version must be v1.7.1')
 check('caches.match(request)' not in sw,'service worker must not search stale previous caches for runtime assets')
 check('document.addEventListener("click"' in (root/'checkin-fix.js').read_text(),'check-in fix must use document-level capture delegation')
+check('complete-journey-day' in (root/'journey-fix.js').read_text(),'journey fix must own day completion')
+check('text!=="Scripture · WEB"' in (root/'journey-translation.js').read_text(),'journey translation sync must be idempotent')
 
 if errors:
     print('HELD STATIC AUDIT: FAIL')
