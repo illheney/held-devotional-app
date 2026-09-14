@@ -1,14 +1,29 @@
-/* Held v1.4 translation label sync for Guided Journeys. */
+/* Held v1.7.1 translation label sync for Guided Journeys. */
 (() => {
+  let scheduled=false;
+
+  const setTextIfChanged=(el,next)=>{
+    if(el && el.textContent!==next) el.textContent=next;
+  };
+
   const sync = () => {
+    scheduled=false;
     document.querySelectorAll(".journey-scripture .card-kicker span:last-child").forEach(el => {
-      if ((el.textContent || "").startsWith("Scripture ·")) el.textContent = "Scripture · WEB";
+      const text=(el.textContent||"").trim();
+      if (text.startsWith("Scripture ·") && text!=="Scripture · WEB") setTextIfChanged(el,"Scripture · WEB");
     });
     document.querySelectorAll(".journey-scripture .scripture-credit span").forEach(el => {
-      if ((el.textContent || "").trim() === "KJV · Public Domain") el.textContent = "WEB · Public Domain";
+      if ((el.textContent || "").trim() === "KJV · Public Domain") setTextIfChanged(el,"WEB · Public Domain");
     });
   };
+
+  const scheduleSync=()=>{
+    if(scheduled)return;
+    scheduled=true;
+    queueMicrotask(sync);
+  };
+
   const app = document.getElementById("app");
-  if (app) new MutationObserver(sync).observe(app,{childList:true,subtree:true});
+  if (app) new MutationObserver(scheduleSync).observe(app,{childList:true,subtree:true});
   sync();
 })();
