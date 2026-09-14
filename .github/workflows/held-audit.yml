@@ -8,7 +8,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Check out Held
         uses: actions/checkout@v4
@@ -21,6 +21,10 @@ jobs:
           done
           python3 .github/tests/static_audit.py
 
+      - name: Install browser audit dependency
+        run: |
+          python3 -m pip install --disable-pip-version-check -q selenium
+
       - name: Browser interaction smoke test
         run: |
           set -euo pipefail
@@ -28,19 +32,4 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 2
-          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          if [ -z "$CHROME" ]; then
-            echo "Chrome/Chromium is not available on this runner."
-            exit 1
-          fi
-          if ! timeout 25s "$CHROME" \
-            --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
-            --disable-background-networking --disable-component-update --disable-sync \
-            --metrics-recording-only --no-first-run --dump-dom \
-            http://127.0.0.1:8765/.github/tests/smoke.html > /tmp/held-smoke.html; then
-            echo "Browser audit timed out or Chrome failed."
-            tail -100 /tmp/held-server.log || true
-            exit 1
-          fi
-          grep -A40 -B3 'audit-results' /tmp/held-smoke.html || true
-          grep -q 'data-audit-status="pass"' /tmp/held-smoke.html
+          python3 .github/tests/run_browser_audit.py
